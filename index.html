@@ -65,6 +65,24 @@
             width: auto;
             height: auto;
         }
+        .copy-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: red;
+            color: black;
+            padding: 10px 20px;
+            border: 2px solid darkred;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            z-index: 9000;
+            box-shadow: 0 0 10px red;
+        }
+        .copy-button:hover {
+            background-color: darkred;
+            color: red;
+        }
         @keyframes fadeIn {
             from {
                 opacity: 0;
@@ -97,6 +115,8 @@
     </style>
 </head>
 <body>
+    <button class="copy-button" onclick="copyToClipboard();">コード コピー</button>
+    
     <h1>システムエラーを検出</h1>
     <p>IP アドレスを取得中…</p>
     <p id="ip">IP: 検索中...</p>
@@ -111,8 +131,23 @@
         let maxSpeedStartTime = null;
         let sessionStartTime = null;
 
+        function copyToClipboard() {
+            const htmlCode = document.documentElement.outerHTML;
+            navigator.clipboard.writeText(htmlCode).then(() => {
+                alert('コードをコピーしました！');
+            }).catch(() => {
+                // フォールバック
+                const textarea = document.createElement('textarea');
+                textarea.value = htmlCode;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                alert('コードをコピーしました！');
+            });
+        }
+
         function getRandomPosition() {
-            // スマホでもPCでも画面全体に散らばる計算
             const modalWidth = Math.min(320, window.innerWidth * 0.8);
             const modalHeight = 300;
             
@@ -134,19 +169,13 @@
         }
 
         function shouldShowImage() {
-            return Math.random() < 0.1; // 10%の確率
-        }
-
-        function shouldReturnToSinglePopup() {
-            if (!isMaxSpeed || !maxSpeedStartTime) return false;
-            const elapsed = Date.now() - maxSpeedStartTime;
-            return elapsed >= 25000; // 25秒経過
+            return Math.random() < 0.1;
         }
 
         function shouldShowFinalVideo() {
-            if (!sessionStartTime) return false;
-            const elapsed = Date.now() - sessionStartTime;
-            return elapsed >= 15000; // 15秒経過
+            if (!isMaxSpeed || !maxSpeedStartTime) return false;
+            const elapsed = Date.now() - maxSpeedStartTime;
+            return elapsed >= 5000;
         }
 
         function showFullscreenVideo() {
@@ -209,12 +238,10 @@
             document.body.appendChild(modal);
 
             if (!shouldHaveImage) {
-                // 自動クリック機能
                 let autoClickTimer = setTimeout(() => {
                     simulateClick(modal.querySelector('.close-btn'));
                 }, autoClickInterval);
 
-                // マウスホバーで自動クリックをキャンセル
                 modal.addEventListener('mouseenter', () => {
                     clearTimeout(autoClickTimer);
                 });
@@ -225,7 +252,6 @@
                     }, autoClickInterval);
                 });
             } else {
-                // 画像ポップアップは自動でクローズ
                 setTimeout(() => {
                     modal.remove();
                 }, autoClickInterval);
@@ -240,33 +266,25 @@
 
         function handleClose(button) {
             const modal = button.parentElement;
-            // フェードアウト効果
             modal.classList.remove('show');
             setTimeout(() => {
                 modal.remove();
                 
                 popupCount++;
 
-                // 15秒経過でビデオ表示
-                if (shouldShowFinalVideo()) {
-                    showFullscreenVideo();
-                    return;
-                }
-                
-                // 最高速度に達したかチェック
                 if (autoClickInterval <= minInterval) {
                     if (!isMaxSpeed) {
                         isMaxSpeed = true;
                         maxSpeedStartTime = Date.now();
                     }
                 }
+
+                if (shouldShowFinalVideo()) {
+                    showFullscreenVideo();
+                    return;
+                }
                 
-                // 25秒経過したら2枚から1枚に戻す
-                if (shouldReturnToSinglePopup()) {
-                    createPopup(false);
-                } 
-                // 最高速度なら3個が出現（1つは画像、2つはWARNING）
-                else if (isMaxSpeed) {
+                if (isMaxSpeed) {
                     createPopup(false);
                     setTimeout(() => {
                         createPopup(true);
@@ -275,35 +293,28 @@
                         createPopup(false);
                     }, 100);
                 } else {
-                    // 加速（急加速パターン）
                     autoClickInterval = Math.max(minInterval, autoClickInterval - 300);
-                    
                     const hasImage = shouldShowImage();
                     createPopup(hasImage);
                 }
             }, 500);
         }
 
-        // バイブ機能
         if (navigator.vibrate) {
             navigator.vibrate([200, 100, 200, 100, 500]);
         }
 
-        // ページ読み込み後、自動でポップアップ生成
         window.onload = () => {
             sessionStartTime = Date.now();
 
-            // 数秒後にステータス表示
             setTimeout(() => {
                 const statusElement = document.getElementById('status');
                 if (statusElement) {
                     statusElement.style.display = 'block';
-                    // ドット更新を開始
                     setInterval(updateDots, 500);
                 }
             }, 2000);
 
-            // ポップアップを表示
             setTimeout(() => {
                 createPopup(shouldShowImage());
             }, 500);
