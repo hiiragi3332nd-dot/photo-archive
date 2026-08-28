@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SYSTEM ALERT</title>
+    <style>
+        body {
+            background-color: black;
+            color: red;
+            font-family: monospace;
+            text-align: center;
+            padding-top: 20%;
+            margin: 0;
+            overflow: hidden;
+        }
+        h1 { font-size: 2rem; }
+        p { color: white; font-size: 1.2rem; }
+        .popup-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: black;
+            color: red;
+            z-index: 10000;
+            font-family: monospace;
+            text-align: center;
+            padding-top: 20%;
+            overflow: hidden;
+        }
+        .popup-modal.show {
+            display: block;
+        }
+        .close-btn {
+            background-color: red;
+            color: black;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 30px;
+        }
+        .close-btn:hover {
+            background-color: darkred;
+        }
+    </style>
+</head>
+<body>
+    <h1>システムエラーを検出</h1>
+    <p>IP アドレスを取得中…</p>
+    <p id="ip">IP: 検索中...</p>
+    <p>コンテンツを取得中…</p>
+    <p id="status">Status: ANALYZING...</p>
+
+    <script>
+        // スマホ判定
+        const isMobile = /iPhone|iPad|Android/i.test(navigator.userAgent);
+
+        function createPopup() {
+            if (isMobile) {
+                // スマホ: モーダルポップアップ
+                if (navigator.vibrate) {
+                    navigator.vibrate([200, 100, 200, 100, 500]);
+                }
+                showMobileModal();
+            } else {
+                // パソコン: ウィンドウポップアップ
+                window.open(window.location.href, '', 'width=600,height=400');
+            }
+        }
+
+        function showMobileModal() {
+            let modal = document.createElement('div');
+            modal.className = 'popup-modal show';
+            modal.innerHTML = `
+                <h1>⚠️ WARNING ⚠️</h1>
+                <p>IP アドレスを取得中…</p>
+                <p id="ip-modal">IP: 検索中...</p>
+                <p>コンテンツを転送中…</p>
+                <p id="status-modal">Status: TRANSMITTING...</p>
+                <button class="close-btn" onclick="this.parentElement.remove(); createPopup(); createPopup();">閉じる</button>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        // 初期化時にバイブ
+        if (navigator.vibrate) {
+            navigator.vibrate([200, 100, 200, 100, 500]);
+        }
+
+        // ページ読み込み後、自動でポップアップ生成
+        window.onload = () => {
+            setTimeout(() => {
+                createPopup();
+            }, 500);
+        };
+    </script>
+</body>
+</html>
