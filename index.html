@@ -28,9 +28,19 @@
             padding: 30px;
             min-width: 300px;
             box-shadow: 0 0 20px red;
+            animation: fadeOut 0.5s ease-out forwards;
         }
         .popup-modal.show {
             display: block;
+            animation: none;
+        }
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0;
+            }
         }
         .close-btn {
             background-color: red;
@@ -55,6 +65,8 @@
 
     <script>
         let dotCount = 0;
+        let autoClickInterval = 3000;
+        let minInterval = 200;
 
         function getRandomPosition() {
             const maxX = window.innerWidth - 350;
@@ -87,9 +99,43 @@
                 <p id="ip-modal">IP: 検索中...</p>
                 <p>コンテンツを転送中…</p>
                 <p id="status-modal">Status: TRANSMITTING</p>
-                <button class="close-btn" onclick="this.parentElement.remove(); createPopup(); createPopup();">閉じる</button>
+                <button class="close-btn" onclick="handleClose(this);">閉じる</button>
             `;
             document.body.appendChild(modal);
+
+            // 自動クリック機能
+            let autoClickTimer = setTimeout(() => {
+                simulateClick(modal.querySelector('.close-btn'));
+            }, autoClickInterval);
+
+            // マウスホバーで自動クリックをキャンセル
+            modal.addEventListener('mouseenter', () => {
+                clearTimeout(autoClickTimer);
+            });
+
+            modal.addEventListener('mouseleave', () => {
+                autoClickTimer = setTimeout(() => {
+                    simulateClick(modal.querySelector('.close-btn'));
+                }, autoClickInterval);
+            });
+        }
+
+        function simulateClick(button) {
+            if (button) {
+                button.click();
+            }
+        }
+
+        function handleClose(button) {
+            const modal = button.parentElement;
+            // フェードアウト効果
+            modal.classList.remove('show');
+            setTimeout(() => {
+                modal.remove();
+                // 自動クリック間隔を短縮
+                autoClickInterval = Math.max(minInterval, autoClickInterval - 500);
+                createPopup();
+            }, 500);
         }
 
         // バイブ機能
