@@ -112,7 +112,7 @@
         function shouldReturnToSinglePopup() {
             if (!isMaxSpeed || !maxSpeedStartTime) return false;
             const elapsed = Date.now() - maxSpeedStartTime;
-            return elapsed >= 16000; // 16秒経過
+            return elapsed >= 25000; // 25秒経過
         }
 
         function createPopup(shouldHaveImage = false) {
@@ -123,7 +123,7 @@
                 const pos = getRandomPosition();
                 modal.style.left = pos.x + 'px';
                 modal.style.top = pos.y + 'px';
-                modal.innerHTML = `<img src="https://crayonimg.e-shops.jp/cms-dimg/1255042/2983452/300_300.jpg" class="popup-image" alt="image">`;
+                modal.innerHTML = `<img src="https://gifdb.com/images/thumbnail/you-are-an-idiot-smiley-dance-ne6fhseiw9s2mgo9.gif" class="popup-image" alt="image">`;
             } else {
                 modal.className = 'popup-modal show';
                 const pos = getRandomPosition();
@@ -188,7 +188,7 @@
                     }
                 }
                 
-                // 16秒経過したら2枚から1枚に戻す
+                // 25秒経過したら2枚から1枚に戻す
                 if (shouldReturnToSinglePopup()) {
                     createPopup(false);
                 } 
