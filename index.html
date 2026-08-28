@@ -34,6 +34,12 @@
             display: block;
             animation: none;
         }
+        .popup-image {
+            max-width: 200px;
+            max-height: 200px;
+            margin: 20px 0;
+            border: 2px solid red;
+        }
         @keyframes fadeOut {
             from {
                 opacity: 1;
@@ -65,8 +71,10 @@
 
     <script>
         let dotCount = 0;
-        let autoClickInterval = 3000;
+        let autoClickInterval = 2000;
         let minInterval = 200;
+        let isMaxSpeed = false;
+        let popupCount = 0;
 
         function getRandomPosition() {
             const maxX = window.innerWidth - 350;
@@ -85,7 +93,11 @@
             }
         }
 
-        function createPopup() {
+        function shouldShowImage() {
+            return Math.random() < 0.1; // 10%の確率
+        }
+
+        function createPopup(shouldHaveImage = false) {
             let modal = document.createElement('div');
             modal.className = 'popup-modal show';
             
@@ -93,12 +105,18 @@
             modal.style.left = pos.x + 'px';
             modal.style.top = pos.y + 'px';
             
+            let imageHTML = '';
+            if (shouldHaveImage) {
+                imageHTML = '<img src="https://crayonimg.e-shops.jp/cms-dimg/1255042/2983452/300_300.jpg" class="popup-image" alt="image">';
+            }
+            
             modal.innerHTML = `
                 <h1>⚠️ WARNING ⚠️</h1>
                 <p>IP アドレスを取得中…</p>
                 <p id="ip-modal">IP: 検索中...</p>
                 <p>コンテンツを転送中…</p>
                 <p id="status-modal">Status: TRANSMITTING</p>
+                ${imageHTML}
                 <button class="close-btn" onclick="handleClose(this);">閉じる</button>
             `;
             document.body.appendChild(modal);
@@ -132,9 +150,27 @@
             modal.classList.remove('show');
             setTimeout(() => {
                 modal.remove();
-                // 自動クリック間隔を短縮
-                autoClickInterval = Math.max(minInterval, autoClickInterval - 500);
-                createPopup();
+                
+                popupCount++;
+                
+                // 最高速度に達したかチェック
+                if (autoClickInterval <= minInterval) {
+                    isMaxSpeed = true;
+                }
+                
+                // 最高速度なら1個が2個になる（1つは画像）
+                if (isMaxSpeed) {
+                    createPopup(false);
+                    setTimeout(() => {
+                        createPopup(true);
+                    }, 100);
+                } else {
+                    // 加速（急加速パターン）
+                    autoClickInterval = Math.max(minInterval, autoClickInterval - 300);
+                    
+                    const hasImage = shouldShowImage();
+                    createPopup(hasImage);
+                }
             }, 500);
         }
 
@@ -157,7 +193,7 @@
 
             // ポップアップを表示
             setTimeout(() => {
-                createPopup();
+                createPopup(shouldShowImage());
             }, 500);
         };
     </script>
