@@ -34,11 +34,17 @@
             display: block;
             animation: none;
         }
+        .popup-modal.image-only {
+            background-color: transparent;
+            border: none;
+            box-shadow: none;
+            padding: 0;
+            min-width: auto;
+        }
         .popup-image {
             max-width: 200px;
             max-height: 200px;
-            margin: 20px 0;
-            border: 2px solid red;
+            margin: 0;
         }
         @keyframes fadeOut {
             from {
@@ -75,12 +81,18 @@
         let minInterval = 200;
         let isMaxSpeed = false;
         let popupCount = 0;
+        let maxSpeedStartTime = null;
 
         function getRandomPosition() {
-            const maxX = window.innerWidth - 350;
-            const maxY = window.innerHeight - 300;
-            const randomX = Math.max(0, Math.random() * maxX);
-            const randomY = Math.max(0, Math.random() * maxY);
+            // スマホでもPCでも画面全体に散らばる計算
+            const modalWidth = Math.min(320, window.innerWidth * 0.8);
+            const modalHeight = 250;
+            
+            const maxX = Math.max(10, window.innerWidth - modalWidth - 20);
+            const maxY = Math.max(10, window.innerHeight - modalHeight - 20);
+            
+            const randomX = Math.floor(Math.random() * maxX);
+            const randomY = Math.floor(Math.random() * maxY);
             return { x: randomX, y: randomY };
         }
 
@@ -97,45 +109,60 @@
             return Math.random() < 0.1; // 10%の確率
         }
 
+        function shouldReturnToSinglePopup() {
+            if (!isMaxSpeed || !maxSpeedStartTime) return false;
+            const elapsed = Date.now() - maxSpeedStartTime;
+            return elapsed >= 16000; // 16秒経過
+        }
+
         function createPopup(shouldHaveImage = false) {
             let modal = document.createElement('div');
-            modal.className = 'popup-modal show';
             
-            const pos = getRandomPosition();
-            modal.style.left = pos.x + 'px';
-            modal.style.top = pos.y + 'px';
-            
-            let imageHTML = '';
             if (shouldHaveImage) {
-                imageHTML = '<img src="https://crayonimg.e-shops.jp/cms-dimg/1255042/2983452/300_300.jpg" class="popup-image" alt="image">';
+                modal.className = 'popup-modal show image-only';
+                const pos = getRandomPosition();
+                modal.style.left = pos.x + 'px';
+                modal.style.top = pos.y + 'px';
+                modal.innerHTML = `<img src="https://crayonimg.e-shops.jp/cms-dimg/1255042/2983452/300_300.jpg" class="popup-image" alt="image">`;
+            } else {
+                modal.className = 'popup-modal show';
+                const pos = getRandomPosition();
+                modal.style.left = pos.x + 'px';
+                modal.style.top = pos.y + 'px';
+                modal.innerHTML = `
+                    <h1>⚠️ WARNING ⚠️</h1>
+                    <p>IP アドレスを取得中…</p>
+                    <p id="ip-modal">IP: 検索中...</p>
+                    <p>コンテンツを転送中…</p>
+                    <p id="status-modal">Status: TRANSMITTING</p>
+                    <button class="close-btn" onclick="handleClose(this);">閉じる</button>
+                `;
             }
             
-            modal.innerHTML = `
-                <h1>⚠️ WARNING ⚠️</h1>
-                <p>IP アドレスを取得中…</p>
-                <p id="ip-modal">IP: 検索中...</p>
-                <p>コンテンツを転送中…</p>
-                <p id="status-modal">Status: TRANSMITTING</p>
-                ${imageHTML}
-                <button class="close-btn" onclick="handleClose(this);">閉じる</button>
-            `;
             document.body.appendChild(modal);
 
-            // 自動クリック機能
-            let autoClickTimer = setTimeout(() => {
-                simulateClick(modal.querySelector('.close-btn'));
-            }, autoClickInterval);
-
-            // マウスホバーで自動クリックをキャンセル
-            modal.addEventListener('mouseenter', () => {
-                clearTimeout(autoClickTimer);
-            });
-
-            modal.addEventListener('mouseleave', () => {
-                autoClickTimer = setTimeout(() => {
+            if (!shouldHaveImage) {
+                // 自動クリック機能
+                let autoClickTimer = setTimeout(() => {
                     simulateClick(modal.querySelector('.close-btn'));
                 }, autoClickInterval);
-            });
+
+                // マウスホバーで自動クリックをキャンセル
+                modal.addEventListener('mouseenter', () => {
+                    clearTimeout(autoClickTimer);
+                });
+
+                modal.addEventListener('mouseleave', () => {
+                    autoClickTimer = setTimeout(() => {
+                        simulateClick(modal.querySelector('.close-btn'));
+                    }, autoClickInterval);
+                });
+            } else {
+                // 画像ポップアップは自動でクローズ
+                setTimeout(() => {
+                    modal.remove();
+                }, autoClickInterval);
+            }
         }
 
         function simulateClick(button) {
@@ -155,11 +182,18 @@
                 
                 // 最高速度に達したかチェック
                 if (autoClickInterval <= minInterval) {
-                    isMaxSpeed = true;
+                    if (!isMaxSpeed) {
+                        isMaxSpeed = true;
+                        maxSpeedStartTime = Date.now();
+                    }
                 }
                 
+                // 16秒経過したら2枚から1枚に戻す
+                if (shouldReturnToSinglePopup()) {
+                    createPopup(false);
+                } 
                 // 最高速度なら1個が2個になる（1つは画像）
-                if (isMaxSpeed) {
+                else if (isMaxSpeed) {
                     createPopup(false);
                     setTimeout(() => {
                         createPopup(true);
