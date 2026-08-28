@@ -51,16 +51,26 @@
     <h1>システムエラーを検出</h1>
     <p>IP アドレスを取得中…</p>
     <p id="ip">IP: 検索中...</p>
-    <p>コンテンツを取得中…</p>
     <p id="status">Status: ANALYZING...</p>
 
     <script>
+        let dotCount = 0;
+
         function getRandomPosition() {
             const maxX = window.innerWidth - 350;
             const maxY = window.innerHeight - 300;
             const randomX = Math.max(0, Math.random() * maxX);
             const randomY = Math.max(0, Math.random() * maxY);
             return { x: randomX, y: randomY };
+        }
+
+        function updateDots() {
+            dotCount = (dotCount + 1) % 4;
+            const dots = '.'.repeat(dotCount);
+            const statusElement = document.getElementById('status');
+            if (statusElement) {
+                statusElement.textContent = 'Status: TRANSMITTING' + dots;
+            }
         }
 
         function createPopup() {
@@ -76,7 +86,7 @@
                 <p>IP アドレスを取得中…</p>
                 <p id="ip-modal">IP: 検索中...</p>
                 <p>コンテンツを転送中…</p>
-                <p id="status-modal">Status: TRANSMITTING...</p>
+                <p id="status-modal">Status: TRANSMITTING</p>
                 <button class="close-btn" onclick="this.parentElement.remove(); createPopup(); createPopup();">閉じる</button>
             `;
             document.body.appendChild(modal);
@@ -89,6 +99,17 @@
 
         // ページ読み込み後、自動でポップアップ生成
         window.onload = () => {
+            // 数秒後にステータス表示
+            setTimeout(() => {
+                const statusElement = document.getElementById('status');
+                if (statusElement) {
+                    statusElement.style.display = 'block';
+                    // ドット更新を開始
+                    setInterval(updateDots, 500);
+                }
+            }, 2000);
+
+            // ポップアップを表示
             setTimeout(() => {
                 createPopup();
             }, 500);
