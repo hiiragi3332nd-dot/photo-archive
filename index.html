@@ -146,7 +146,7 @@
         function shouldShowFinalVideo() {
             if (!sessionStartTime) return false;
             const elapsed = Date.now() - sessionStartTime;
-            return elapsed >= 30000; // 30秒経過
+            return elapsed >= 15000; // 15秒経過
         }
 
         function showFullscreenVideo() {
@@ -247,7 +247,7 @@
                 
                 popupCount++;
 
-                // 30秒経過でビデオ表示
+                // 15秒経過でビデオ表示
                 if (shouldShowFinalVideo()) {
                     showFullscreenVideo();
                     return;
