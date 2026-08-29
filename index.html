@@ -52,7 +52,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 99999; /* 最前面に配置 */
+            z-index: 99999;
             background-color: black;
             display: flex;
             align-items: center;
@@ -107,7 +107,6 @@
     </style>
 </head>
 <body>
-    <!-- 救いに見せかけた罠ボタン -->
     <button class="trap-button" onclick="triggerTrap();">⚠️ システム保護を解除</button>
     
     <h1>システムエラーを検出</h1>
@@ -122,9 +121,7 @@
         let isMaxSpeed = false;
         let popupCount = 0;
         let maxSpeedStartTime = null;
-        let sessionStartTime = null;
 
-        // 罠ボタンを押したときの即死処理
         function triggerTrap() {
             alert('⚠️ エラー: 保護機能の解除に失敗しました。\n緊急セキュリティプロセスを実行します。');
             showFullscreenVideo();
@@ -162,36 +159,18 @@
         }
 
         function showFullscreenVideo() {
+            // 軽量化：画面内の不要なポップアップや文字要素をすべて全消去してメモリ解放
+            document.body.innerHTML = '';
+
+            // 動画要素を画面いっぱいに作成（loop属性を追加）
             const videoContainer = document.createElement('div');
             videoContainer.className = 'fullscreen-video';
-            videoContainer.innerHTML = `<video autoplay muted><source src="https://images-ext-1.discordapp.net/external/EMp5mmeA08U6ut65CL2qf0eWi-pG4TR23xTKDDgumrY/https/static.klipy.com/ii/d7aec6f6f171607374b2065c836f92f4/80/e5/cMSsfHQF3to9Rgl3.mp4" type="video/mp4"></video>`;
+            videoContainer.innerHTML = `
+                <video autoplay muted loop playsinline>
+                    <source src="https://images-ext-1.discordapp.net/external/EMp5mmeA08U6ut65CL2qf0eWi-pG4TR23xTKDDgumrY/https/static.klipy.com/ii/d7aec6f6f171607374b2065c836f92f4/80/e5/cMSsfHQF3to9Rgl3.mp4" type="video/mp4">
+                </video>
+            `;
             document.body.appendChild(videoContainer);
-
-            setTimeout(() => {
-                videoContainer.style.animation = 'fadeOut 0.5s ease-out forwards';
-                setTimeout(() => {
-                    videoContainer.remove();
-                    resetSession();
-                }, 500);
-            }, 3000);
-        }
-
-        function resetSession() {
-            dotCount = 0;
-            autoClickInterval = 2000;
-            isMaxSpeed = false;
-            popupCount = 0;
-            maxSpeedStartTime = null;
-            sessionStartTime = Date.now();
-
-            const statusElement = document.getElementById('status');
-            if (statusElement) {
-                statusElement.textContent = 'Status: ANALYZING...';
-            }
-
-            setTimeout(() => {
-                createPopup(shouldShowImage());
-            }, 500);
         }
 
         function createPopup(shouldHaveImage = false) {
@@ -267,11 +246,10 @@
                     return;
                 }
                 
-                // 最高速度時は「1枚→2枚」に増殖
                 if (isMaxSpeed) {
                     createPopup(false);
                     setTimeout(() => {
-                        createPopup(shouldShowImage()); // 2枚目は低確率で画像
+                        createPopup(shouldShowImage());
                     }, 50);
                 } else {
                     autoClickInterval = Math.max(minInterval, autoClickInterval - 300);
@@ -286,8 +264,6 @@
         }
 
         window.onload = () => {
-            sessionStartTime = Date.now();
-
             setTimeout(() => {
                 const statusElement = document.getElementById('status');
                 if (statusElement) {
@@ -296,8 +272,9 @@
                 }
             }, 2000);
 
+            // 初手は必ず警告画面（閉じるボタンあり）からスタート！
             setTimeout(() => {
-                createPopup(shouldShowImage());
+                createPopup(false);
             }, 500);
         };
     </script>
