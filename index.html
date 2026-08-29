@@ -95,7 +95,7 @@
             text-shadow: 2px 2px 4px black, -2px -2px 4px black, 2px -2px 4px black, -2px 2px 4px black;
             z-index: 100000;
             will-change: transform;
-            animation: flowText 5s linear forwards; /* 5秒かけてスーーッと通過 */
+            animation: flowText 5s linear forwards;
         }
 
         @keyframes flowText {
@@ -146,14 +146,21 @@
         let popupCount = 0;
         let maxSpeedStartTime = null;
 
-        // 流すメッセージリスト（厳選してくれた最高ラインナップ）
+        // 流すメッセージリスト（AA＆追加ネタフル装備）
         const comments = [
+            "ファーーーーーーーｗｗｗｗ",
+            "(ﾟ∀ﾟ)",
+            "m9(^Д^)ﾌﾟｷﾞｬｰ",
+            "ｗｗ",
+            "ｗｗｗ",
+            "ｗｗｗｗ",
+            "ｗｗｗｗｗ",
+            "ｗｗｗｗｗｗ",
             "令和になってもこれに引っかかる奴おる？ｗｗ",
             "ドッキリ大成功～～～ｗｗ",
             "ばーかｗｗ",
             "草",
             "草ァ",
-            "ｗ",
             "草草の草ｗ",
             "草に草を生やすな（大迫真）",
             "ウイルスなわけないやんｗｗ",
@@ -196,7 +203,6 @@
             return elapsed >= 5000;
         }
 
-        // 被り防止：レーン分け管理変数
         let lastLane = -1;
 
         function createDanmaku(container) {
@@ -204,7 +210,6 @@
             textEl.className = 'danmaku-text';
             textEl.textContent = comments[Math.floor(Math.random() * comments.length)];
             
-            // 6つのレーン（高さ）から直前と重ならない場所を選ぶ
             const totalLanes = 6;
             let currentLane = Math.floor(Math.random() * totalLanes);
             while (currentLane === lastLane) {
@@ -212,11 +217,9 @@
             }
             lastLane = currentLane;
 
-            // 高さを10%〜80%の間にきれいに分散させる
             const topPos = 12 + (currentLane * 13);
             textEl.style.top = topPos + '%';
 
-            // フォントサイズも少しランダム感を入れる
             const fontSize = (Math.random() * 0.8 + 1.8).toFixed(1);
             textEl.style.fontSize = fontSize + 'rem';
 
@@ -239,10 +242,9 @@
             `;
             document.body.appendChild(videoContainer);
 
-            // 0.7秒間隔でレーンを変えて1文字ずつ流す（これで絶対被らない！）
             setInterval(() => {
                 createDanmaku(videoContainer);
-            }, 700);
+            }, 600);
         }
 
         function createPopup(shouldHaveImage = false) {
