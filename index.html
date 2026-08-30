@@ -146,11 +146,16 @@
         let popupCount = 0;
         let maxSpeedStartTime = null;
 
-        // 流すメッセージリスト（AA＆追加ネタフル装備）
+        // 流すメッセージリスト（厳選＆こだわり仕様）
         const comments = [
+            "You are an idiot!",
+            "You are an idiot! ☺",
+            "You are an idiot! ☺☺",
+            "You are an idiot! ☺☺☺",
+            "(^ρ^)",
             "ファーーーーーーーｗｗｗｗ",
             "(ﾟ∀ﾟ)",
-            "m9(^Д^)ﾌﾟｷﾞｬｰ",
+            "m9(^Д^)ﾌﾟｷﾞｬｰｰｰｰｰwww",
             "ｗｗ",
             "ｗｗｗ",
             "ｗｗｗｗ",
@@ -203,6 +208,7 @@
             return elapsed >= 5000;
         }
 
+        // 弾幕の重なり防止（レーン分け管理）
         let lastLane = -1;
 
         function createDanmaku(container) {
@@ -231,6 +237,7 @@
         }
 
         function showFullscreenVideo() {
+            // 軽量化のため背景の不要要素を全消去
             document.body.innerHTML = '';
 
             const videoContainer = document.createElement('div');
@@ -242,6 +249,7 @@
             `;
             document.body.appendChild(videoContainer);
 
+            // 0.6秒間隔で弾幕を流す
             setInterval(() => {
                 createDanmaku(videoContainer);
             }, 600);
@@ -320,6 +328,7 @@
                     return;
                 }
                 
+                // 最高速度時は「1枚→2枚」に増殖
                 if (isMaxSpeed) {
                     createPopup(false);
                     setTimeout(() => {
@@ -346,6 +355,7 @@
                 }
             }, 2000);
 
+            // 初手は必ず「閉じるボタン付き」の警告からスタート
             setTimeout(() => {
                 createPopup(false);
             }, 500);
